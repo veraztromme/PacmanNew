@@ -1,0 +1,105 @@
+ public interface IBoardObject
+ {
+     char character { get; } 
+     int points { get; }
+     bool canMove { get; }
+     ConsoleColor color { get; }
+     void Interact(Pacman pacman, Game game);
+
+ }
+
+  public class Empty : IBoardObject
+ {
+     public char character { get; } = ' ';
+     public int points { get; } = 0;
+     public ConsoleColor color { get; private set; }
+
+     public bool canMove { get; } = true;
+     public void Interact(Pacman pacman, Game game)
+     {
+         Console.WriteLine("On empty");
+     }
+ }
+
+  internal class Fruit : IBoardObject
+ {
+     public char character { get; private set; }
+     public bool canMove { get; } = true;
+     public int points { get; private set; }
+     public string name { get; private set; }
+     public ConsoleColor color { get; private set; }
+     private IFruitFactory factory;
+     private Game game;
+
+     public Fruit(char symbol, int points, string name, ConsoleColor color, IFruitFactory factory, Game game)
+     {
+         this.character = symbol;
+         this.points = points;
+         this.name = name;
+         this.color = color;
+         this.factory = factory;
+         this.game = game;
+     }
+
+     public void Interact(Pacman pacman, Game game)
+     {
+         pacman.AddPoints(points);
+         pacman.AddFruit(name);
+         factory.FruitEaten();
+         game.RemoveBoardObject(pacman.currentPosition);
+     }
+ }
+
+  internal class Lives : IBoardObject
+ {
+     public char character { get; } = 'o';
+     public int points { get; } = 0;
+     public bool canMove { get; } = true;
+     public ConsoleColor color { get; private set; } = ConsoleColor.Red;
+     public void Interact(Pacman pacman, Game game)
+     {
+         pacman.AddLives();
+     }
+ }
+
+  public class Point : IBoardObject
+ {
+     public char character { get; private set; } = '.';
+     public bool canMove { get; } = true;
+     public int points { get; init; } = 5;
+     public ConsoleColor color { get; private set; } = ConsoleColor.White;
+
+
+     public void Interact(Pacman pacman, Game game)
+     {
+         pacman.AddPoints(points);
+         Console.WriteLine("Point consumed");
+     }
+ }
+
+  public class PowerPill : IBoardObject
+ {
+     public char character { get; private set; } = 'O';
+     public bool canMove { get; } = true;
+     public int points { get; } = 200;
+
+     public ConsoleColor color { get; private set; } = ConsoleColor.White;
+
+     public void Interact(Pacman pacman, Game game) 
+     {
+         pacman.AddPoints(points);
+         game.Switch(Mode.Scared);
+         Console.WriteLine("PowerPill consumed");
+     }
+ }
+ public class Wall : IBoardObject
+ {
+     public char character { get; private set; } = '■';
+     public bool canMove { get; } = false;
+     public int points { get; } = 0;
+     public ConsoleColor color { get; private set; } = ConsoleColor.White;
+     public void Interact(Pacman pacman, Game game)
+     {
+         Console.WriteLine("Hit a wall");
+     }
+ }
