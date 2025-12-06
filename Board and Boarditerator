@@ -1,0 +1,112 @@
+public class Board : IEnumerable<((int, int), IBoardObject)>
+{
+    public List<List<IBoardObject>> grid { get; private set; }
+
+    public int Height => grid.Count; 
+    public int Width => grid[0].Count;
+
+
+    public Board()
+    {
+        string[] maze =
+        {
+        "#################################",
+        "#...#.......................#...#",
+        "#.#.#.#########.#.#########.#.#.#",
+        "#.......#.......#.......#.......#",
+        "###.#.#.#.#####.#.#####.#.#.#.###",
+        "#...#.#.#.#...#.#.#...#.#.#.#...#",
+        "#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#",
+        "#...#.#.#.#...#.#.#...#.#.#.#...#",
+        "#####.#.#.##.##.#.##.##.#.#.#####",
+        "#.....#.#...............#.#.....#",
+        "#.#####.#.##.###.###.##.#.#####.#",
+        "#............#.....#............#",
+        "#.#####.#.##.#######.##.#.#####.#",
+        "#.....#.#...............#.#.....#",
+        "#####.#.#.##.##.#.##.##.#.#.#####",
+        "#...#.#.#.#...#.#.#...#.#.#.#...#",
+        "#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#",
+        "#...#.#.#.#...#.#.#...#.#.#.#...#",
+        "###.#.#.#.#####.#.#####.#.#.#.###",
+        "#.......#.......#.......#.......#",
+        "#.#.#.#########.#.#########.#.#.#",
+        "#...#.......................#...#",
+        "#################################"
+    };
+
+
+        grid = new List<List<IBoardObject>>();
+
+
+        for (int y = 0; y < maze.Length; y++)
+        {
+            var row = new List<IBoardObject>();
+            for (int x = 0; x < maze[y].Length; x++)
+            {
+                char c = maze[y][x];
+                row.Add(c switch
+                {
+                    '#' => new Wall(),
+                    '.' => new Empty(),
+                    _ => throw new Exception($"Okänt tecken: {c} på ({x},{y})")
+                });
+            }
+            grid.Add(row);
+        }
+    }
+
+
+    public IEnumerator<((int, int), IBoardObject)> GetEnumerator()
+        => new BoardIterator(this);
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+class BoardIterator : IEnumerator<((int, int), IBoardObject)>
+{
+    private Board board;
+    private int currentRow = 0;
+    private int currentCol = -1;
+
+
+    public BoardIterator(Board board)
+        => this.board = board;
+
+
+    public ((int, int), IBoardObject) Current
+    {
+        get
+        {
+            if (currentRow < 0 || currentRow > board.Height || currentCol < 0 || currentCol > board.Width)
+                throw new InvalidOperationException();
+
+
+            return ((currentRow, currentCol), board.grid[currentRow][currentCol]);
+        }
+    }
+    object IEnumerator.Current => Current;
+
+
+    public bool MoveNext()
+    {
+        currentCol++;
+        
+        if (currentCol >= board.Width)
+        {
+            currentCol = 0;
+            currentRow++;
+        }
+
+        return currentRow < board.Height;
+    }
+
+
+    public void Reset()
+    {
+        currentRow = 0;
+        currentCol = -1;
+    }
+
+
+    public void Dispose() { }
+}
